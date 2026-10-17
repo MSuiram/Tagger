@@ -46,16 +46,28 @@ class ImageFrame(ctk.CTkFrame):
 
     def new_image(self, path, filename):
         file_path = os.path.join(path, filename)
-        print(file_path)
         try:
             pil_image = PIL.Image.open(file_path)
 
-            self.image = ctk.CTkImage(light_image=pil_image,dark_image=pil_image,size=pil_image.size)
+            image_size = self.image_size(pil_image)
+
+            self.image = ctk.CTkImage(light_image=pil_image,dark_image=pil_image,size=image_size)
 
             self.image_label.configure(image=self.image, text="")
 
         except (FileNotFoundError, OSError) as e:
             print(f"Impossible de charger l'image : {e}")
+
+    def image_size(self, image):
+        width_image, height_image = image.size
+        width_frame, height_frame = self.winfo_width()-20, self.winfo_height()-20
+
+        ratio = min(width_frame/width_image, height_frame/height_image)
+
+        if ratio >= 1:
+            return (width_image, height_image)
+        else:
+            return (round(width_image*ratio), round(height_image*ratio))
 
 class Window(ctk.CTkFrame):
     def __init__(self, master):
@@ -86,4 +98,3 @@ class Window(ctk.CTkFrame):
     def file_viewed(self, value):
         self._file_viewed = value
         self.main_frame.new_image(self.path, self.file_viewed)
-        print("file_viewed =", value)
