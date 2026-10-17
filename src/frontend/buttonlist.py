@@ -50,19 +50,23 @@ class ButtonList(ctk.CTkFrame):
         )
 
         # Molette Windows / macOS
-        self.canvas.bind(
-            "<MouseWheel>", self._on_mousewheel
-        )
-        self.bind(
-            "<MouseWheel>", self._on_mousewheel
+        self.canvas.bind_all(
+            "<MouseWheel>",
+            self._on_mousewheel,
+            add="+"
         )
 
         # Molette Linux
-        self.canvas.bind(
-            "<Button-4>", self._on_linux_wheel
+        self.canvas.bind_all(
+            "<Button-4>",
+            self._on_linux_wheel,
+            add="+"
         )
-        self.canvas.bind(
-            "<Button-5>", self._on_linux_wheel
+
+        self.canvas.bind_all(
+            "<Button-5>",
+            self._on_linux_wheel,
+            add="+"
         )
 
         self.after_idle(self._refresh)
@@ -87,9 +91,22 @@ class ButtonList(ctk.CTkFrame):
                 self._refresh
             )
 
+    def _pointer_is_inside(self, event):
+        x = self.winfo_rootx()
+        y = self.winfo_rooty()
+
+        return (
+            x <= event.x_root < x + self.winfo_width()
+            and
+            y <= event.y_root < y + self.winfo_height()
+        )
+
     def _on_mousewheel(self, event):
-        if event.delta == 0:
+        if not self._pointer_is_inside(event):
             return
+
+        if event.delta == 0:
+            return "break"
 
         if abs(event.delta) >= 120:
             units = -int(event.delta / 120)
@@ -102,6 +119,9 @@ class ButtonList(ctk.CTkFrame):
         return "break"
 
     def _on_linux_wheel(self, event):
+        if not self._pointer_is_inside(event):
+            return
+
         if event.num == 4:
             self.canvas.yview_scroll(-1, "units")
         elif event.num == 5:

@@ -74,5 +74,4 @@ class Window(ctk.CTkFrame):
         self.list_frame.set_items(files_list)
 
     def on_item_click(self, filename):
-        print(f"Bouton cliqué : {filename}")
         self.main_frame.new_image(self.path, filename)
