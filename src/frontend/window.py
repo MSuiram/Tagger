@@ -2,34 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 import os
 import PIL
-
-class ButtonList(ctk.CTkScrollableFrame):
-    def __init__(self, master, window):
-        super().__init__(master)
-
-        self.window = window
-
-        self.buttons = dict()
-
-    def button_creator(self, path):
-        self.buttons.clear()
-        files = os.listdir(path)
-        row = 0
-
-        for filename in files:
-            if os.path.isfile(os.path.join(path, filename)) and filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif")):
-                button = ctk.CTkButton(self,text=filename,command=lambda f=filename: self.on_button_click(f))
-
-                button.grid(row=row,column=0,padx=5,pady=5,sticky="ew")
-
-                self.buttons[filename] = button
-                row += 1
-
-        self.grid_columnconfigure(0, weight=1)
-
-
-    def on_button_click(self, filename):
-        self.window.file_viewed = filename
+from .buttonlist import ButtonList
 
 class ImageFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -71,14 +44,13 @@ class Window(ctk.CTkFrame):
         super().__init__(master)
 
         self.path = None
-        self._file_viewed = None
 
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=0)
         self.grid_rowconfigure(0, weight=1)
 
-        self.list_frame = ButtonList(self, self)
+        self.list_frame = ButtonList(self, items=[], on_click=self.on_item_click, row_height=42, overscan=3 )
         self.list_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         self.main_frame = ImageFrame(self)
@@ -89,13 +61,18 @@ class Window(ctk.CTkFrame):
 
     def new_path(self, path):
         self.path = path
-        self.list_frame.button_creator(path)
+        print("new path")
 
-    @property
-    def file_viewed(self):
-        return self._file_viewed
-    
-    @file_viewed.setter
-    def file_viewed(self, value):
-        self._file_viewed = value
-        self.main_frame.new_image(self.path, self.file_viewed)
+        files_list = []
+
+        files = os.listdir(path)
+
+        for filename in files:
+            if os.path.isfile(os.path.join(path, filename)) and filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif")):
+                files_list.append(filename)
+
+        self.list_frame.set_items(files_list)
+
+    def on_item_click(self, filename):
+        print(f"Bouton cliqué : {filename}")
+        self.main_frame.new_image(self.path, filename)
