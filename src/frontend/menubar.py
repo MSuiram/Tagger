@@ -3,8 +3,10 @@ import tkinter as tk
 import CTkMenuBarPlus as ctkm
 
 class MenuBar(ctkm.CTkMenuBar):
-    def __init__(self, master):
+    def __init__(self, master, app):
         super().__init__(master)
+
+        self.app = app
 
         self.file_but = self.add_cascade("File")
 
@@ -21,8 +23,17 @@ class MenuBar(ctkm.CTkMenuBar):
             command=self.save_file
         )
 
+        self.label_chemin = ctk.CTkLabel(self, text="Aucun dossier sélectionné", wraplength=450)
+
     def open_file(self):
         print("Open")
+        path_file = ctk.filedialog.askdirectory(title="Choisissez un dossier")
+        
+        if path_file:
+            self.app.path_folder = path_file
+            print(f"Dossier : {path_file}")
+        else:
+            print("Sélection annulée.")
 
     def save_file(self):
         print("Save")
