@@ -17,8 +17,7 @@ class ButtonList(ctk.CTkScrollableFrame):
         row = 0
 
         for filename in files:
-            if os.path.isfile(os.path.join(path, filename)) and filename.endswith(".png"):
-                print(filename)
+            if os.path.isfile(os.path.join(path, filename)) and filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif")):
                 button = ctk.CTkButton(self,text=filename,command=lambda f=filename: self.on_button_click(f))
 
                 button.grid(row=row,column=0,padx=5,pady=5,sticky="ew")
