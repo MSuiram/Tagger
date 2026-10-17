@@ -45,6 +45,9 @@ class Window(ctk.CTkFrame):
 
         self.path = None
 
+        self.files = []
+        self.image_index = 0
+
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=0)
@@ -60,6 +63,7 @@ class Window(ctk.CTkFrame):
         self.info_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
     def new_path(self, path):
+        self.image_index = 0
         self.path = path
         print("new path")
 
@@ -72,6 +76,20 @@ class Window(ctk.CTkFrame):
                 files_list.append(filename)
 
         self.list_frame.set_items(files_list)
+        self.files = files_list
 
-    def on_item_click(self, filename):
+    def on_item_click(self, filename, index):
+        self.image_index = index
         self.main_frame.new_image(self.path, filename)
+
+    def next_image(self, event=None):
+        if not self.files:
+            return
+        self.image_index +=1
+        self.main_frame.new_image(self.path, self.files[self.image_index])
+
+    def previous_image(self, event=None):
+        if not self.files:
+            return
+        self.image_index -=1
+        self.main_frame.new_image(self.path, self.files[self.image_index])

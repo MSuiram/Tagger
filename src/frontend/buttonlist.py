@@ -131,7 +131,7 @@ class ButtonList(ctk.CTkFrame):
 
     def _on_button_click(self, index):
         if self.on_click is not None:
-            self.on_click(self.items[index])
+            self.on_click(self.items[index],index)
 
     def _refresh(self, event=None):
         self._refresh_job = None
@@ -214,5 +214,6 @@ class ButtonList(ctk.CTkFrame):
         self._update_scrollregion()
         self.canvas.yview_moveto(0)
         self._schedule_refresh()
+        self.on_click(self.items[0], 0)
 
     

@@ -32,6 +32,9 @@ class App(ctk.CTk):
             expand=True
         )
 
+        self.bind("<Right>", self.window_frame.next_image)
+        self.bind("<Left>", self.window_frame.previous_image)
+
     @property
     def path_folder(self):
         return self._path_folder
