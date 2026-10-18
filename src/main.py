@@ -10,16 +10,20 @@ ctk.set_default_color_theme("green")
 appWidth, appHeight = 1920, 1080
 
 class App(ctk.CTk):
+    def set_path_folder(self, value):
+            self.path_folder = value
+            self.window_frame.new_path(value)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._path_folder = None
+        self.path_folder = None
 
         self.title("Tagger")
         self.geometry(f"{appWidth}x{appHeight}")
 
         # Menu
-        self.menu = menubar.MenuBar(self, self)
+        self.menu = menubar.MenuBar(self, self, self.set_path_folder)
         self.menu.pack(side="top", fill="x")
         self.menu.configure(fg_color="transparent")
         self.menu.lift()
@@ -34,15 +38,6 @@ class App(ctk.CTk):
 
         self.bind("<Right>", self.window_frame.next_image)
         self.bind("<Left>", self.window_frame.previous_image)
-
-    @property
-    def path_folder(self):
-        return self._path_folder
-        
-    @path_folder.setter
-    def path_folder(self, value):
-        self._path_folder = value
-        self.window_frame.new_path(value)
 
 
 if __name__ == "__main__":
