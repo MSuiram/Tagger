@@ -80,6 +80,8 @@ class Window(ctk.CTkFrame):
             self.image_index = index
             self.main_frame.new_image(pil_image)
 
+            self.info_frame.metadata(pil_image)
+
         except (FileNotFoundError, OSError) as e:
             print(f"Impossible de charger l'image : {e}")
             
