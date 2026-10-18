@@ -107,3 +107,4 @@ class Window(ctk.CTkFrame):
 
     def set_engine_window(self, engine):
         self.engine = engine
+        self.info_frame.set_engine_info_frame(engine)

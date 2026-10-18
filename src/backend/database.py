@@ -126,8 +126,8 @@ def id_image(filename, engine):
 
         return image_id
 
-def add_tag(name, description, engine):
-    if id_tag == None:
+def add_tag(name, engine, description= None):
+    if id_tag(name, engine) == None:
         Session = sessionmaker(bind=engine)
         with Session() as session:
             tag = Tag(name=name, description=description)
@@ -144,6 +144,16 @@ def id_tag(name, engine):
             .scalar()
         )
         return tag_id
+
+def search_tag(word, engine):
+    Session = sessionmaker(bind=engine)
+        
+    with Session() as session:
+        return (
+            session.query(Tag.name)
+            .filter(Tag.name.ilike(f"%{word}%"))
+            .all()
+        )
 
 # engine = creat_db(
 #     r"C:\Users\mariu\Desktop\PY\Tagger\Test",

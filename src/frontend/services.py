@@ -3,6 +3,7 @@ import tkinter as tk
 import os
 from PIL import Image
 from PIL.ExifTags import TAGS
+from backend import database
 
 class Services(ctk.CTkFrame):
     def __init__(self, master):
@@ -14,12 +15,13 @@ class Services(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
 
         self.toplevel = None
+        self.engine = None
 
         self.metadatabox = ctk.CTkLabel(self, compound="left", width=400, padx= 10, pady=10, justify= "left", anchor="w")
         self.metadatabox.grid(row = 0, column= 0, sticky="new")
         self.metadatabox.configure(text = "Aucune métadonnée")
 
-        self.addtag_button = ctk.CTkButton(self, text="Ajouter un Tag", height=42, command=lambda: self.shearch_window())
+        self.addtag_button = ctk.CTkButton(self, text="Ajouter un Tag", height=42, command=lambda: self.search_window())
         self.addtag_button.grid(row=1, column= 0, sticky="nsew", padx=10, pady=10 )
 
         self.tag_list= TagListe(self)
@@ -47,11 +49,14 @@ class Services(ctk.CTkFrame):
         else:
             self.metadatabox.configure(text = "Aucune métadonnée EXIF trouvée pour cette image.")
 
-    def shearch_window(self):
+    def search_window(self):
         if self.toplevel is None or not self.toplevel.winfo_exists():
-            self.toplevel = ShearchWindow(self)
+            self.toplevel = SearchWindow(self, self.engine)
         else:
             self.toplevel.focus()
+
+    def set_engine_info_frame(self, engine):
+        self.engine = engine
 
 class TagListe(ctk.CTkScrollableFrame):
     def __init__(self, master):
@@ -63,21 +68,54 @@ class TagListe(ctk.CTkScrollableFrame):
             self.test = ctk.CTkButton(self, text="test")
             self.test.grid(row=0, column= 0, sticky="nsew")
 
-class ShearchWindow(ctk.CTkToplevel):
-    def __init__(self, master):
+class SearchWindow(ctk.CTkToplevel):
+    def __init__(self, master, engine):
         super().__init__(master)
 
-        self.title("Shearch Tag")
+        self.title("Search Tag")
         self.geometry("300x600")
         self.attributes("-topmost", True)
 
+
+        self.engine = engine
+        self.search_var = ctk.StringVar()
+
         self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(1, weight=0)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.shearch_entry = ctk.CTkEntry(self, placeholder_text="Shearch...")
-        self.shearch_entry.grid(row=0, sticky="new")
+        self.search_entry = ctk.CTkEntry(
+            self,
+            placeholder_text="Search...",
+            textvariable=self.search_var
+        )
+        self.search_entry.grid(row=0, sticky="new")
 
-        self.scroll_tag = ctk.CTkScrollableFrame(self)
-        self.scroll_tag.grid(row=1, sticky="nsew")
+        self.add_tag_button = ctk.CTkButton(self, text="New Tag", command=lambda: self.add_tag())
+        self.add_tag_button.grid(row=1, sticky="new")
 
+        self.search_var.trace_add("write", self.entry_change)
+
+        self.scroll_tag = ScrollTag(self)
+        self.scroll_tag.grid(row=2, sticky="nsew")
+
+        self.entry_change()
+
+    def entry_change(self, *_):
+        word = self.search_var.get()
+        liste = database.search_tag(word, self.engine)
+        print(liste)
+
+    def add_tag(self):
+        word = self.search_var.get()
+        print(word)
+        database.add_tag(word,engine=self.engine)
+
+    def set_engine_search(self, engine):
+        self.engine = engine
+
+
+class ScrollTag(ctk.CTkScrollableFrame):
+    def __init__(self, master):
+        super().__init__(master)
