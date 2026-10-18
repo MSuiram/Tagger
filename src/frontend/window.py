@@ -3,6 +3,7 @@ import tkinter as tk
 import os
 import PIL
 from .buttonlist import ButtonList
+from .services import Services
 
 class ImageFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -13,20 +14,13 @@ class ImageFrame(ctk.CTkFrame):
         self.image_label = ctk.CTkLabel(self, text="")
         self.image_label.pack(expand=True, fill="both", padx=10, pady=10)
 
-    def new_image(self, path, filename):
-        try:
-            file_path = os.path.join(path, filename)
-
-            pil_image = PIL.Image.open(file_path)
-
+    def new_image(self, pil_image):
+            
             image_size = self.image_size(pil_image)
 
             self.image = ctk.CTkImage(light_image=pil_image,dark_image=pil_image,size=image_size)
 
             self.image_label.configure(image=self.image, text="")
-
-        except (FileNotFoundError, OSError) as e:
-            print(f"Impossible de charger l'image : {e}")
 
     def image_size(self, image):
         width_image, height_image = image.size
@@ -59,7 +53,7 @@ class Window(ctk.CTkFrame):
         self.main_frame = ImageFrame(self)
         self.main_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        self.info_frame = ctk.CTkFrame(self)
+        self.info_frame = Services(self)
         self.info_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
     def new_path(self, path):
@@ -78,18 +72,29 @@ class Window(ctk.CTkFrame):
         self.list_frame.set_items(files_list)
         self.files = files_list
 
+    def image_change(self, filename, index):
+        try:
+            file_path = os.path.join(self.path, filename)
+            pil_image = PIL.Image.open(file_path)
+
+            self.image_index = index
+            self.main_frame.new_image(pil_image)
+
+        except (FileNotFoundError, OSError) as e:
+            print(f"Impossible de charger l'image : {e}")
+            
+        
     def on_item_click(self, filename, index):
-        self.image_index = index
-        self.main_frame.new_image(self.path, filename)
+        self.image_change(filename, index)
 
     def next_image(self, event=None):
         if not self.files:
             return
         self.image_index +=1
-        self.main_frame.new_image(self.path, self.files[self.image_index])
+        self.image_change(self.files[self.image_index], self.image_index)
 
     def previous_image(self, event=None):
         if not self.files:
             return
         self.image_index -=1
-        self.main_frame.new_image(self.path, self.files[self.image_index])
+        self.image_change(self.files[self.image_index], self.image_index)
