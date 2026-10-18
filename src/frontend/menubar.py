@@ -77,14 +77,15 @@ class MenuBar(ctkm.CTkMenuBar):
 
     def add_to_project_file(self):
         path_folder = ctk.filedialog.askdirectory(title="Choisissez un dossier")
-                
-        if path_folder:
-            database.add_folder(path_folder, self.engine)
-            self.openfile_click(path_folder)
-            print(f"Dossier : {path_folder}")
-        else:
-            print("Sélection annulée.")
-        print("Add to project")
+
+        if database.find_folder(self.engine) == None:     
+            if path_folder:
+                database.add_folder(path_folder, self.engine)
+                self.openfile_click(path_folder)
+                print(f"Dossier : {path_folder}")
+            else:
+                print("Sélection annulée.")
+            print("Add to project")
 
     def new_project(self):
         path_file = ctk.filedialog.asksaveasfilename(title="Enregistez le projet sous...", defaultextension=".db")
