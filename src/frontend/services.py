@@ -16,6 +16,7 @@ class Services(ctk.CTkFrame):
 
         self.toplevel = None
         self.engine = None
+        self.filename = None
 
         self.metadatabox = ctk.CTkLabel(self, compound="left", width=400, padx= 10, pady=10, justify= "left", anchor="w")
         self.metadatabox.grid(row = 0, column= 0, sticky="new")
@@ -28,6 +29,8 @@ class Services(ctk.CTkFrame):
         self.tag_list.grid(row=2, column= 0, sticky="nsew")
     
     def metadata(self, image):
+        self.filename = os.path.basename(image.filename)
+
         exifdata = image.getexif()
 
         text = ""
@@ -51,9 +54,10 @@ class Services(ctk.CTkFrame):
 
     def search_window(self):
         if self.toplevel is None or not self.toplevel.winfo_exists():
-            self.toplevel = SearchWindow(self, self.engine)
+            self.toplevel = SearchWindow(self, self.engine, self.filename)
         else:
-            self.toplevel.focus()
+            self.toplevel.destroy()
+            self.toplevel = SearchWindow(self, self.engine, self.filename)
 
     def set_engine_info_frame(self, engine):
         self.engine = engine
@@ -69,7 +73,7 @@ class TagListe(ctk.CTkScrollableFrame):
             self.test.grid(row=0, column= 0, sticky="nsew")
 
 class SearchWindow(ctk.CTkToplevel):
-    def __init__(self, master, engine):
+    def __init__(self, master, engine, filename):
         super().__init__(master)
 
         self.title("Search Tag")
@@ -78,6 +82,7 @@ class SearchWindow(ctk.CTkToplevel):
 
 
         self.engine = engine
+        self.filename = filename
         self.search_var = ctk.StringVar()
 
         self.grid_rowconfigure(0, weight=0)
@@ -117,7 +122,9 @@ class SearchWindow(ctk.CTkToplevel):
         self.engine = engine
 
     def on_button_click(self, name_tag):
+        database.add_link_image_tag(self.filename, name_tag, self.engine)
         print(name_tag)
+        print(self.filename)
 
 
 class ScrollTag(ctk.CTkScrollableFrame):

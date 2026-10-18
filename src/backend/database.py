@@ -155,6 +155,28 @@ def search_tag(word, engine):
             .all()
         )
 
+def add_link_image_tag(filename, tag_name, engine):
+    image = id_image(filename, engine)
+    tag = id_tag(tag_name, engine)
+    if id_link_image_tag(image, tag, engine) == None:
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            link = LinkImageTag(image_id = image, tag_id = tag)
+            session.add(link)
+            session.commit()
+
+def id_link_image_tag(image, tag, engine):
+    Session = sessionmaker(bind=engine)
+    
+    with Session() as session:
+        link_id = (
+            session.query(LinkImageTag)
+            .filter(LinkImageTag.image_id == image, LinkImageTag.tag_id == tag)
+            .scalar()
+        )
+        return link_id
+    
+
 # engine = creat_db(
 #     r"C:\Users\mariu\Desktop\PY\Tagger\Test",
 #     "bonjour",
