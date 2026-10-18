@@ -97,7 +97,7 @@ class SearchWindow(ctk.CTkToplevel):
 
         self.search_var.trace_add("write", self.entry_change)
 
-        self.scroll_tag = ScrollTag(self)
+        self.scroll_tag = ScrollTag(self, self.on_button_click)
         self.scroll_tag.grid(row=2, sticky="nsew")
 
         self.entry_change()
@@ -105,6 +105,7 @@ class SearchWindow(ctk.CTkToplevel):
     def entry_change(self, *_):
         word = self.search_var.get()
         liste = database.search_tag(word, self.engine)
+        self.scroll_tag.button_tags_creator(liste)
         print(liste)
 
     def add_tag(self):
@@ -115,7 +116,27 @@ class SearchWindow(ctk.CTkToplevel):
     def set_engine_search(self, engine):
         self.engine = engine
 
+    def on_button_click(self, name_tag):
+        print(name_tag)
+
 
 class ScrollTag(ctk.CTkScrollableFrame):
-    def __init__(self, master):
+    def __init__(self, master, on_click):
         super().__init__(master)
+
+        self.on_click = on_click
+
+        self.button_tags = []
+
+    def button_tags_creator(self, tags):
+        if self.button_tags:
+            for bouton in self.button_tags:
+                bouton.destroy()
+            self.button_tags.clear()
+        
+        for tag in tags:
+            bouton = ctk.CTkButton(self, text=tag[0], command=lambda item=tag[0]: self.on_click(item))
+            bouton.pack(pady=10, padx=20, fill="x")
+            self.button_tags.append(bouton)
+
+        
