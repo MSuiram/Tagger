@@ -4,6 +4,7 @@ import os
 import PIL
 from .buttonlist import ButtonList
 from .services import Services
+from backend import database
 
 class ImageFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -38,6 +39,7 @@ class Window(ctk.CTkFrame):
         super().__init__(master)
 
         self.path = None
+        self.engine = None
 
         self.files = []
         self.image_index = 0
@@ -82,6 +84,8 @@ class Window(ctk.CTkFrame):
 
             self.info_frame.metadata(pil_image)
 
+            database.add_image(self.path, filename, self.engine)
+
         except (FileNotFoundError, OSError) as e:
             print(f"Impossible de charger l'image : {e}")
             
@@ -100,3 +104,6 @@ class Window(ctk.CTkFrame):
             return
         self.image_index -=1
         self.image_change(self.files[self.image_index], self.image_index)
+
+    def set_engine_window(self, engine):
+        self.engine = engine

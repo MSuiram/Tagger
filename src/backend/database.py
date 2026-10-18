@@ -95,7 +95,7 @@ def id_folder(path, engine):
         return folder_id
 
 def add_image(path, filename, engine):
-    if id_image == None:
+    if id_image(filename, engine) == None:
         Session = sessionmaker(bind=engine)
         with Session() as session:
             image = Image(filename=filename, folder_id = id_folder(path, engine))

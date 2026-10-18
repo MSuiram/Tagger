@@ -45,6 +45,7 @@ class App(ctk.CTk):
         print("here")
         self.engine = database.creat_db(path)
         self.menu.set_engine_menu(self.engine)
+        self.window_frame.set_engine_window(self.engine)
 
 
 if __name__ == "__main__":
