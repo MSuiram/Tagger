@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 
 from frontend import menubar, window
+from backend import database
 
 ctk.set_appearance_mode("System")
 
@@ -18,12 +19,13 @@ class App(ctk.CTk):
         super().__init__(*args, **kwargs)
 
         self.path_folder = None
+        self.engine = None
 
         self.title("Tagger")
         self.geometry(f"{appWidth}x{appHeight}")
 
         # Menu
-        self.menu = menubar.MenuBar(self, self, self.set_path_folder)
+        self.menu = menubar.MenuBar(self, self, self.set_path_folder, self.set_engine)
         self.menu.pack(side="top", fill="x")
         self.menu.configure(fg_color="transparent")
         self.menu.lift()
@@ -38,6 +40,11 @@ class App(ctk.CTk):
 
         self.bind("<Right>", self.window_frame.next_image)
         self.bind("<Left>", self.window_frame.previous_image)
+
+    def set_engine(self,path):
+        print("here")
+        self.engine = database.creat_db(path)
+        self.menu.set_engine_menu(self.engine)
 
 
 if __name__ == "__main__":
