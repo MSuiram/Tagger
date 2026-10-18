@@ -6,7 +6,6 @@ from sqlalchemy import (
     Integer,
     String,
     ForeignKey,
-    select
 )
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.orm import Session, declarative_base
@@ -95,13 +94,17 @@ def id_folder(path, engine):
 
         return folder_id
 
-def all_folder(engine):
+def find_folder(engine):
     Session = sessionmaker(bind=engine)
     
     with Session() as session:
-        stmt = select(Folder.path)
-        return session.execute(stmt).scalars().all()
+        folder_path = (
+            session.query(Folder.path)
+            .limit(1)
+            .scalar()
+        )
     
+        return folder_path
 
 def add_image(path, filename, engine):
     if id_image(filename, engine) == None:

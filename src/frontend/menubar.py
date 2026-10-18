@@ -106,9 +106,9 @@ class MenuBar(ctkm.CTkMenuBar):
         if path_file:
             print(f"Dossier : {path_file}")
             self.set_engine(path_file)
-            folders = database.all_folder(self.engine)
-            for folder in folders:
-                self.openfile_click(folder)
+            folder = database.find_folder(self.engine)
+            print(folder)
+            self.openfile_click(folder)
         else:
             print("Sélection annulée.")
 
