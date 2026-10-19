@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
+import os
 
 from frontend import menubar, window
 from backend import database
@@ -20,6 +21,7 @@ class App(ctk.CTk):
 
         self.path_folder = None
         self.engine = None
+        self.project = None
 
         self.title("Tagger")
         self.geometry(f"{appWidth}x{appHeight}")
@@ -42,9 +44,11 @@ class App(ctk.CTk):
         self.bind("<Left>", self.window_frame.previous_image)
 
     def set_engine(self,path):
+        self.project = os.path.basename(path)
         self.engine = database.creat_db(path)
         self.menu.set_engine_menu(self.engine)
         self.window_frame.set_engine_window(self.engine)
+        self.title(f"Tagger - {self.project}")
 
 
 if __name__ == "__main__":

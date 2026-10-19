@@ -1,6 +1,5 @@
 import customtkinter as ctk
 import tkinter as tk
-import os
 
 class ButtonList(ctk.CTkFrame):
     def __init__(
@@ -21,6 +20,7 @@ class ButtonList(ctk.CTkFrame):
         self.buttons = []
         self.windows = []
         self._refresh_job = None
+        self.project = None
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
