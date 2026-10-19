@@ -6,6 +6,7 @@ from sqlalchemy import (
     Integer,
     String,
     ForeignKey,
+    func,
 )
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.orm import Session, declarative_base
@@ -203,6 +204,32 @@ def find_tag_for_image(name_image, engine):
             .filter(Image.filename == name_image)
             .all()
         )
+
+def find_image_for_tags(tag_names, engine):
+    tag_names = [
+        name
+        for tag in tag_names
+        for name in (tag if isinstance(tag, (list, tuple)) else [tag])
+    ]
+
+    tag_names = list(set(tag_names))
+
+    if not tag_names:
+        return []
+
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        results = (
+            session.query(Image.filename)
+            .join(Image.tags)
+            .filter(Tag.name.in_(tag_names))
+            .group_by(Image.id, Image.filename)
+            .having(func.count(Tag.id) == len(tag_names))
+            .all()
+        )
+
+        return [filename for (filename,) in results]
     
 # engine = creat_db(
 #     r"C:\Users\mariu\Desktop\PY\Tagger\Test",

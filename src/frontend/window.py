@@ -7,8 +7,108 @@ from .services import Services
 from .scrolltag import ScrollTag
 from backend import database
 
-class ImageFrame(ctk.CTkFrame):
+class Window(ctk.CTkFrame):
     def __init__(self, master):
+        super().__init__(master)
+
+        self.path = None
+        self.engine = None
+
+        self.files = []
+        self.image_index = 0
+        self.length_index = 0
+        self.actual_files = []
+
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=0)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.list_frame = ButtonList(self, items=[], on_click=self.on_item_click, row_height=42, overscan=3 )
+        self.list_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        self.main_frame = ImageFrame(self, self.new_files)
+        self.main_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        self.info_frame = Services(self)
+        self.info_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
+
+    def new_path(self, path):
+        self.image_index = 0
+        self.path = path
+        print("new path")
+
+        files_list = []
+
+        files = os.listdir(path)
+
+        for filename in files:
+            if os.path.isfile(os.path.join(path, filename)) and filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif")):
+                files_list.append(filename)
+
+        self.list_frame.set_items(files_list)
+        self.files = files_list
+        self.actual_files = files_list
+        self.length_index = len(files)-1
+
+    def image_change(self, filename, index):
+        try:
+            file_path = os.path.join(self.path, filename)
+            pil_image = PIL.Image.open(file_path)
+
+            self.image_index = index
+            self.main_frame.new_image(pil_image)
+
+            self.info_frame.metadata(pil_image)
+
+            database.add_image(self.path, filename, self.engine)
+
+        except (FileNotFoundError, OSError) as e:
+            print(f"Impossible de charger l'image : {e}")
+            
+        
+    def on_item_click(self, filename, index):
+        self.image_change(filename, index)
+
+    def next_image(self, event=None):
+        if not self.actual_files:
+            return
+        
+        if self.image_index < self.length_index:
+            self.image_index +=1
+
+        self.image_change(self.actual_files[self.image_index], self.image_index)
+
+    def previous_image(self, event=None):
+        if not self.actual_files:
+            return
+
+        if self.image_index > 0:
+            self.image_index -=1
+
+        self.image_change(self.actual_files[self.image_index], self.image_index)
+
+    def new_files(self, tags):
+        self.image_index = 0
+
+        filenames = database.find_image_for_tags(tags, self.engine)
+        if filenames == []:
+            self.actual_files = self.files
+            self.list_frame.set_items(self.files)
+            self.length_index = len(self.files)-1
+        else:
+            self.actual_files = filenames
+            self.list_frame.set_items(filenames)
+            self.length_index = len(filenames)-1
+        print(filenames)
+
+    def set_engine_window(self, engine):
+        self.engine = engine
+        self.info_frame.set_engine_info_frame(engine)
+        self.main_frame.set_engine_image_frame(engine)
+
+class ImageFrame(ctk.CTkFrame):
+    def __init__(self, master, action):
         super().__init__(master)
 
         self.grid_columnconfigure(0, weight=0)
@@ -20,6 +120,7 @@ class ImageFrame(ctk.CTkFrame):
         self.toplevel = None
         self.engine = None
         self.tag_selected = []
+        self.action = action
 
         self.add_tag_button = ctk.CTkButton(self, text=("Add Tag"), command=lambda: self.on_click_add_tag())
         self.add_tag_button.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
@@ -94,6 +195,8 @@ class ImageFrame(ctk.CTkFrame):
         else:
             self.tag_selected.append([new_tag])
 
+        self.action(self.tag_selected)
+
         self.tag_frame.button_tags_creator(self.tag_selected)
 
     def set_engine_image_frame(self, engine):
@@ -141,85 +244,3 @@ class SearchWindow(ctk.CTkToplevel):
 
     def on_button_click(self, name_tag):
         self.action(name_tag)
-
-class Window(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master)
-
-        self.path = None
-        self.engine = None
-
-        self.files = []
-        self.image_index = 0
-
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure(2, weight=0)
-        self.grid_rowconfigure(0, weight=1)
-
-        self.list_frame = ButtonList(self, items=[], on_click=self.on_item_click, row_height=42, overscan=3 )
-        self.list_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-
-        self.main_frame = ImageFrame(self)
-        self.main_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-
-        self.info_frame = Services(self)
-        self.info_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
-
-    def new_path(self, path):
-        self.image_index = 0
-        self.path = path
-        print("new path")
-
-        files_list = []
-
-        files = os.listdir(path)
-
-        for filename in files:
-            if os.path.isfile(os.path.join(path, filename)) and filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif")):
-                files_list.append(filename)
-
-        self.list_frame.set_items(files_list)
-        self.files = files_list
-
-    def image_change(self, filename, index):
-        try:
-            file_path = os.path.join(self.path, filename)
-            pil_image = PIL.Image.open(file_path)
-
-            self.image_index = index
-            self.main_frame.new_image(pil_image)
-
-            self.info_frame.metadata(pil_image)
-
-            database.add_image(self.path, filename, self.engine)
-
-        except (FileNotFoundError, OSError) as e:
-            print(f"Impossible de charger l'image : {e}")
-            
-        
-    def on_item_click(self, filename, index):
-        self.image_change(filename, index)
-
-    def next_image(self, event=None):
-        if not self.files:
-            return
-        
-        if self.image_index < len(self.files)-1:
-            self.image_index +=1
-
-        self.image_change(self.files[self.image_index], self.image_index)
-
-    def previous_image(self, event=None):
-        if not self.files:
-            return
-
-        if self.image_index > 0:
-            self.image_index -=1
-
-        self.image_change(self.files[self.image_index], self.image_index)
-
-    def set_engine_window(self, engine):
-        self.engine = engine
-        self.info_frame.set_engine_info_frame(engine)
-        self.main_frame.set_engine_image_frame(engine)
