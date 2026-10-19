@@ -3,36 +3,81 @@ import tkinter as tk
 import os
 import PIL
 from .buttonlist import ButtonList
-from .services import Services
+from .services import Services, ScrollTag
 from backend import database
 
 class ImageFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+
         self.image = None
 
-        self.image_label = ctk.CTkLabel(self, text="")
-        self.image_label.pack(expand=True, fill="both", padx=10, pady=10)
+        self.add_tag_button = ctk.CTkButton(self, text=("Add Tag"))
+        self.add_tag_button.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
+
+        self.tag_frame = ScrollTag(
+            self,
+            orientation="horizontal",
+            on_click= self.on_click,
+            height=30
+        )
+        self.tag_frame.grid(
+            row=0, column=1,
+            sticky="ew",
+            padx=10, pady=10
+        )
+
+        self.image_label = ctk.CTkLabel(
+            self,
+            text="Aucune image"
+        )
+        self.image_label.grid(
+            row=1, column=0,
+            columnspan=2,
+            sticky="nsew",
+            padx=10, pady=10
+        )
 
     def new_image(self, pil_image):
-            
-            image_size = self.image_size(pil_image)
+        self.update_idletasks()
 
-            self.image = ctk.CTkImage(light_image=pil_image,dark_image=pil_image,size=image_size)
+        image_size = self.image_size(pil_image)
 
-            self.image_label.configure(image=self.image, text="")
+        self.image = ctk.CTkImage(
+            light_image=pil_image,
+            dark_image=pil_image,
+            size=image_size
+        )
+
+        self.image_label.configure(
+            image=self.image,
+            text=""
+        )
 
     def image_size(self, image):
         width_image, height_image = image.size
-        width_frame, height_frame = self.winfo_width()-20, self.winfo_height()-20
 
-        ratio = min(width_frame/width_image, height_frame/height_image)
+        width_frame = max(1, self.winfo_width() - 40)
+        height_frame = max(1, self.winfo_height() - 90)
 
-        if ratio >= 1:
-            return (width_image, height_image)
-        else:
-            return (round(width_image*ratio), round(height_image*ratio))
+        ratio = min(
+            width_frame / width_image,
+            height_frame / height_image,
+            1
+        )
+
+        return (
+            round(width_image * ratio),
+            round(height_image * ratio)
+        )
+
+    def on_click(self):
+        pass
 
 class Window(ctk.CTkFrame):
     def __init__(self, master):

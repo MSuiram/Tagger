@@ -133,8 +133,13 @@ class SearchWindow(ctk.CTkToplevel):
         self.action()
 
 class ScrollTag(ctk.CTkScrollableFrame):
-    def __init__(self, master, on_click):
-        super().__init__(master)
+    def __init__(self, master, on_click, orientation="vertical", height=None):
+        kwargs = {"orientation": orientation}
+
+        if height is not None:
+            kwargs["height"] = height
+
+        super().__init__(master, **kwargs)
 
         self.on_click = on_click
 
