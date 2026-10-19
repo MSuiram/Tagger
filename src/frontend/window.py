@@ -100,7 +100,6 @@ class Window(ctk.CTkFrame):
             self.actual_files = filenames
             self.list_frame.set_items(filenames)
             self.length_index = len(filenames)-1
-        print(filenames)
 
     def set_engine_window(self, engine):
         self.engine = engine

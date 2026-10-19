@@ -7,7 +7,9 @@ from backend import database
 
 ctk.set_appearance_mode("System")
 
-ctk.set_default_color_theme("green")
+ctk.set_appearance_mode("dark")
+
+ctk.set_default_color_theme("dark-blue")
 
 appWidth, appHeight = 1920, 1080
 

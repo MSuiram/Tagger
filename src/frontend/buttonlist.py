@@ -29,6 +29,8 @@ class ButtonList(ctk.CTkFrame):
             self,
             highlightthickness=0,
             borderwidth=0,
+            bg="#2b2b2b",
+        
         )
         self.canvas.grid(row=0, column=0, sticky="nsew")
 
