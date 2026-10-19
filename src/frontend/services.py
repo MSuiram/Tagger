@@ -4,6 +4,7 @@ import os
 from PIL import Image
 from PIL.ExifTags import TAGS
 from backend import database
+from .scrolltag import ScrollTag
 
 class Services(ctk.CTkFrame):
     def __init__(self, master):
@@ -131,29 +132,5 @@ class SearchWindow(ctk.CTkToplevel):
             database.delete_link_image_tag(self.filename, name_tag, self.engine)
 
         self.action()
-
-class ScrollTag(ctk.CTkScrollableFrame):
-    def __init__(self, master, on_click, orientation="vertical", height=None):
-        kwargs = {"orientation": orientation}
-
-        if height is not None:
-            kwargs["height"] = height
-
-        super().__init__(master, **kwargs)
-
-        self.on_click = on_click
-
-        self.button_tags = []
-
-    def button_tags_creator(self, tags):
-        if self.button_tags:
-            for bouton in self.button_tags:
-                bouton.destroy()
-            self.button_tags.clear()
-        
-        for tag in tags:
-            bouton = ctk.CTkButton(self, text=tag[0], command=lambda item=tag[0]: self.on_click(item))
-            bouton.pack(pady=5, padx=10, fill="x")
-            self.button_tags.append(bouton)
 
         

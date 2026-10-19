@@ -3,7 +3,8 @@ import tkinter as tk
 import os
 import PIL
 from .buttonlist import ButtonList
-from .services import Services, ScrollTag
+from .services import Services
+from .scrolltag import ScrollTag
 from backend import database
 
 class ImageFrame(ctk.CTkFrame):
@@ -16,15 +17,19 @@ class ImageFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
 
         self.image = None
+        self.toplevel = None
+        self.engine = None
+        self.tag_selected = []
 
-        self.add_tag_button = ctk.CTkButton(self, text=("Add Tag"))
+        self.add_tag_button = ctk.CTkButton(self, text=("Add Tag"), command=lambda: self.on_click_add_tag())
         self.add_tag_button.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
         self.tag_frame = ScrollTag(
             self,
             orientation="horizontal",
-            on_click= self.on_click,
-            height=30
+            on_click= self.tag_reload,
+            height=30,
+            button_orientation="horizontal"
         )
         self.tag_frame.grid(
             row=0, column=1,
@@ -76,8 +81,66 @@ class ImageFrame(ctk.CTkFrame):
             round(height_image * ratio)
         )
 
-    def on_click(self):
-        pass
+    def on_click_add_tag(self):
+        if self.toplevel is None or not self.toplevel.winfo_exists():
+            self.toplevel = SearchWindow(self, self.engine, self.tag_reload)
+        else:
+            self.toplevel.destroy()
+            self.toplevel = SearchWindow(self, self.engine, self.tag_reload)
+
+    def tag_reload(self, new_tag):
+        if [new_tag] in self.tag_selected:
+            self.tag_selected.remove([new_tag])
+        else:
+            self.tag_selected.append([new_tag])
+
+        self.tag_frame.button_tags_creator(self.tag_selected)
+
+    def set_engine_image_frame(self, engine):
+        self.engine=engine
+
+class SearchWindow(ctk.CTkToplevel):
+    def __init__(self, master, engine, action):
+        super().__init__(master)
+
+        self.title("Search Tag")
+        self.geometry("300x600")
+        self.attributes("-topmost", True)
+
+
+        self.engine = engine
+        self.action = action
+        self.search_var = ctk.StringVar()
+
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=0)
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.search_entry = ctk.CTkEntry(
+            self,
+            placeholder_text="Search...",
+            textvariable=self.search_var
+        )
+        self.search_entry.grid(row=0, sticky="new")
+
+        self.search_var.trace_add("write", self.entry_change)
+
+        self.scroll_tag = ScrollTag(self, self.on_button_click)
+        self.scroll_tag.grid(row=2, sticky="nsew")
+
+        self.entry_change()
+
+    def entry_change(self, *_):
+        word = self.search_var.get()
+        liste = database.search_tag(word, self.engine)
+        self.scroll_tag.button_tags_creator(liste)
+
+    def set_engine_search(self, engine):
+        self.engine = engine
+
+    def on_button_click(self, name_tag):
+        self.action(name_tag)
 
 class Window(ctk.CTkFrame):
     def __init__(self, master):
@@ -159,3 +222,4 @@ class Window(ctk.CTkFrame):
     def set_engine_window(self, engine):
         self.engine = engine
         self.info_frame.set_engine_info_frame(engine)
+        self.main_frame.set_engine_image_frame(engine)
