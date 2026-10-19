@@ -25,11 +25,13 @@ class Services(ctk.CTkFrame):
         self.addtag_button = ctk.CTkButton(self, text="Ajouter un Tag", height=42, command=lambda: self.search_window())
         self.addtag_button.grid(row=1, column= 0, sticky="nsew", padx=10, pady=10 )
 
-        self.tag_list= TagListe(self)
+        self.tag_list= ScrollTag(self, on_click=self.tag_click)
         self.tag_list.grid(row=2, column= 0, sticky="nsew")
     
     def metadata(self, image):
         self.filename = os.path.basename(image.filename)
+
+        self.tag_reload()
 
         exifdata = image.getexif()
 
@@ -54,26 +56,24 @@ class Services(ctk.CTkFrame):
 
     def search_window(self):
         if self.toplevel is None or not self.toplevel.winfo_exists():
-            self.toplevel = SearchWindow(self, self.engine, self.filename)
+            self.toplevel = SearchWindow(self, self.engine, self.filename, self.tag_reload)
         else:
             self.toplevel.destroy()
-            self.toplevel = SearchWindow(self, self.engine, self.filename)
+            self.toplevel = SearchWindow(self, self.engine, self.filename, self.tag_reload)
 
     def set_engine_info_frame(self, engine):
         self.engine = engine
 
-class TagListe(ctk.CTkScrollableFrame):
-    def __init__(self, master):
-            super().__init__(master)
+    def tag_reload(self):
+        tag_list = database.find_tag_for_image(self.filename, self.engine)
+        self.tag_list.button_tags_creator(tag_list)
 
-            self.grid_rowconfigure(0, weight=1)
-            self.grid_columnconfigure(0, weight=1)
+    def tag_click(self, tag_name):
+        print(tag_name)
 
-            self.test = ctk.CTkButton(self, text="test")
-            self.test.grid(row=0, column= 0, sticky="nsew")
 
 class SearchWindow(ctk.CTkToplevel):
-    def __init__(self, master, engine, filename):
+    def __init__(self, master, engine, filename, action):
         super().__init__(master)
 
         self.title("Search Tag")
@@ -83,6 +83,7 @@ class SearchWindow(ctk.CTkToplevel):
 
         self.engine = engine
         self.filename = filename
+        self.action = action
         self.search_var = ctk.StringVar()
 
         self.grid_rowconfigure(0, weight=0)
@@ -111,21 +112,24 @@ class SearchWindow(ctk.CTkToplevel):
         word = self.search_var.get()
         liste = database.search_tag(word, self.engine)
         self.scroll_tag.button_tags_creator(liste)
-        print(liste)
 
     def add_tag(self):
         word = self.search_var.get()
-        print(word)
         database.add_tag(word,engine=self.engine)
 
     def set_engine_search(self, engine):
         self.engine = engine
 
     def on_button_click(self, name_tag):
-        database.add_link_image_tag(self.filename, name_tag, self.engine)
-        print(name_tag)
-        print(self.filename)
+        image = database.id_image(self.filename, self.engine)
+        tag = database.id_tag(name_tag, self.engine)
 
+        if database.id_link_image_tag(image, tag, self.engine) is None:
+            database.add_link_image_tag(self.filename, name_tag, self.engine)
+        else:
+            database.delete_link_image_tag(self.filename, name_tag, self.engine)
+
+        self.action()
 
 class ScrollTag(ctk.CTkScrollableFrame):
     def __init__(self, master, on_click):
@@ -143,7 +147,7 @@ class ScrollTag(ctk.CTkScrollableFrame):
         
         for tag in tags:
             bouton = ctk.CTkButton(self, text=tag[0], command=lambda item=tag[0]: self.on_click(item))
-            bouton.pack(pady=10, padx=20, fill="x")
+            bouton.pack(pady=5, padx=10, fill="x")
             self.button_tags.append(bouton)
 
         

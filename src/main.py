@@ -42,7 +42,6 @@ class App(ctk.CTk):
         self.bind("<Left>", self.window_frame.previous_image)
 
     def set_engine(self,path):
-        print("here")
         self.engine = database.creat_db(path)
         self.menu.set_engine_menu(self.engine)
         self.window_frame.set_engine_window(self.engine)

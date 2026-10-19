@@ -165,18 +165,45 @@ def add_link_image_tag(filename, tag_name, engine):
             session.add(link)
             session.commit()
 
-def id_link_image_tag(image, tag, engine):
+def delete_link_image_tag(filename, tag_name, engine):
+    image = id_image(filename, engine)
+    tag = id_tag(tag_name, engine)
+
+    if id_link_image_tag(image, tag, engine) is not None:
+        Session = sessionmaker(bind=engine)
+
+        with Session() as session:
+            link = session.query(LinkImageTag).filter_by(
+                image_id=image,
+                tag_id=tag
+            ).first()
+
+            if link:
+                session.delete(link)
+                session.commit()
+
+def id_link_image_tag(id_image, id_tag, engine):
     Session = sessionmaker(bind=engine)
     
     with Session() as session:
         link_id = (
             session.query(LinkImageTag)
-            .filter(LinkImageTag.image_id == image, LinkImageTag.tag_id == tag)
+            .filter(LinkImageTag.image_id == id_image, LinkImageTag.tag_id == id_tag)
             .scalar()
         )
         return link_id
-    
 
+def find_tag_for_image(name_image, engine):
+    Session = sessionmaker(bind=engine)
+
+    with Session() as session:
+        return (
+            session.query(Tag.name)
+            .join(Tag.images)
+            .filter(Image.filename == name_image)
+            .all()
+        )
+    
 # engine = creat_db(
 #     r"C:\Users\mariu\Desktop\PY\Tagger\Test",
 #     "bonjour",
