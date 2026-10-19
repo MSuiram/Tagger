@@ -35,7 +35,7 @@ class Services(ctk.CTkFrame):
 
         exifdata = image.getexif()
 
-        text = ""
+        text = f"Filename: {self.filename}\n"
 
         if exifdata:
             for tag_id in exifdata:
@@ -52,7 +52,8 @@ class Services(ctk.CTkFrame):
             self.metadatabox.configure(text = text)
 
         else:
-            self.metadatabox.configure(text = "Aucune métadonnée EXIF trouvée pour cette image.")
+            text += "Aucune métadonnée EXIF trouvée pour cette image.\n"
+            self.metadatabox.configure(text = text)
 
     def search_window(self):
         if self.toplevel is None or not self.toplevel.winfo_exists():
