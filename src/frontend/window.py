@@ -96,13 +96,19 @@ class Window(ctk.CTkFrame):
     def next_image(self, event=None):
         if not self.files:
             return
-        self.image_index +=1
+        
+        if self.image_index < len(self.files)-1:
+            self.image_index +=1
+
         self.image_change(self.files[self.image_index], self.image_index)
 
     def previous_image(self, event=None):
         if not self.files:
             return
-        self.image_index -=1
+
+        if self.image_index > 0:
+            self.image_index -=1
+
         self.image_change(self.files[self.image_index], self.image_index)
 
     def set_engine_window(self, engine):
