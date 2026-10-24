@@ -16,6 +16,8 @@ class SearchWindow(ctk.CTkToplevel):
         self.engine = engine
         self.action = action
         self.search_var = ctk.StringVar()
+        self.tag_list = []
+        self.index = 0
 
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=0)
@@ -33,6 +35,7 @@ class SearchWindow(ctk.CTkToplevel):
             self.add_tag_button = ctk.CTkButton(self, text="New Tag", command=lambda: self.add_tag())
             self.add_tag_button.grid(row=1, sticky="new")
 
+        self.ignore_trace = False
         self.search_var.trace_add("write", self.entry_change)
 
         self.scroll_tag = ScrollTag(self, self.on_button_click)
@@ -40,10 +43,38 @@ class SearchWindow(ctk.CTkToplevel):
 
         self.entry_change()
 
+        self.search_entry.bind('<Tab>', self.tab_action)
+        self.search_entry.bind('<Return>', self.enter_action)
+
     def entry_change(self, *_):
+        if self.ignore_trace:
+            return
+
         word = self.search_var.get()
         liste = database.search_tag(word, self.engine)
         self.scroll_tag.button_tags_creator(liste)
+        self.tag_list = liste
+        self.index = 0
+
+    def enter_action(self, event=None):
+        tag = self.search_var.get()
+        if database.id_tag(tag, self.engine):
+            self.action(tag)
+
+    def tab_action(self, event=None):
+        if not self.tag_list:
+            return
+
+        self.ignore_trace = True
+        try:
+            self.search_var.set(self.tag_list[self.index][0])
+        finally:
+            self.ignore_trace = False
+
+        if self.index >= len(self.tag_list)-1:
+            self.index = 0
+        else:
+            self.index += 1
 
     def add_tag(self):
         word = self.search_var.get()
